@@ -1,7 +1,7 @@
 import pygame
 # pylint: disable=no-member
 
-pygame.init() #yes
+pygame.init()
 white = (255, 255, 255)
 black = (0, 0, 0)
 red = (255, 0, 0)

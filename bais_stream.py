@@ -4,7 +4,7 @@ import pygame
 
 # print(pygame.__doc__)
 # print(dir(pygame))
-pygame.init() #and this
+pygame.init()
 screen = pygame.display.set_mode((400, 300))
 done = False
 

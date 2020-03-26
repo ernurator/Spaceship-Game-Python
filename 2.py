@@ -1,7 +1,7 @@
 import pygame
 #pylint: disable=no-member
 
-pygame.init() # oops
+pygame.init()
 
 screen = pygame.display.set_mode((800, 600)) # w, h
 
