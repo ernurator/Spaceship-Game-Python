@@ -1,7 +1,7 @@
 import pygame
 #pylint: disable=no-member
 
-pygame.init() #trying git
+pygame.init()
 
 screen = pygame.display.set_mode((800, 600)) # w, h
 
