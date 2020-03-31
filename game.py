@@ -19,9 +19,9 @@ bulletImage = pygame.image.load('res/bullet.png')
 player_x, player_y = 300, 520
 enemy_x, enemy_y = random.randint(0, 736), random.randint(20, 50)
 bullet_x, bullet_y = 0, 600
-enemy_dx = 3
+enemy_dx = 10
 enemy_dy = 50
-bullet_dy = -7
+bullet_dy = -30
 
 def player(x, y):
     screen.blit(playerImage, (x, y))
@@ -40,7 +40,10 @@ def drawScore():
     text = font.render(f'Score: {score}', True, (238, 238, 238))
     screen.blit(text, (800 - text.get_width() - 20, 20))
 
+clock = pygame.time.Clock()
+
 while not done:
+    clock.tick(30)
     for event in pygame.event.get():
         # Event on quit
         if event.type == pygame.QUIT:
@@ -50,9 +53,9 @@ while not done:
     pressed = pygame.key.get_pressed()
 
     if pressed[pygame.K_LEFT]:
-        player_x -= 3
+        player_x -= 14
     if pressed[pygame.K_RIGHT]:
-        player_x += 3
+        player_x += 14
 
     # Firing
     if pressed[pygame.K_SPACE] and not fired:
