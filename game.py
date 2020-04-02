@@ -7,9 +7,9 @@ pygame.init()
 screen = pygame.display.set_mode((800, 600)) # w, h
 pygame.display.set_caption('Space blaster')
 
-done = False
-fired = False
-score = 0
+
+##########################################    Objects init    ##########################################
+
 
 playerImage = pygame.image.load('res/spaceship.png')
 enemyImage = pygame.image.load('res/ufo.png')
@@ -22,6 +22,10 @@ bullet_x, bullet_y = 0, 600
 enemy_dx = 10
 enemy_dy = 50
 bullet_dy = -30
+
+
+##########################################    Drawings    ##########################################
+
 
 def player(x, y):
     screen.blit(playerImage, (x, y))
@@ -36,11 +40,25 @@ def bullet(x, y):
     screen.blit(bulletImage, (x, y))
 
 def drawScore():
+    global score
     font = pygame.font.SysFont('Courier', 24, bold=True)
     text = font.render(f'Score: {score}', True, (238, 238, 238))
     screen.blit(text, (800 - text.get_width() - 20, 20))
 
+
+
+##########################################    Init    ##########################################
+
+
+done = False
+fired = False
+score = 0
+
 clock = pygame.time.Clock()
+
+
+##########################################    Main loop    ##########################################
+
 
 while not done:
     clock.tick(30)
@@ -49,7 +67,7 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
        
-    # Move
+    ##########################    Spaceship movement    ##########################
     pressed = pygame.key.get_pressed()
 
     if pressed[pygame.K_LEFT]:
@@ -57,27 +75,27 @@ while not done:
     if pressed[pygame.K_RIGHT]:
         player_x += 14
 
-    # Firing
+    ###########################    Firing    ##########################
     if pressed[pygame.K_SPACE] and not fired:
         fired = True
         bullet_x = player_x + 20
         bullet_y = player_y - 25
     
-    # Enemy movement
+    ##########################    Enemy movement    ##########################
     enemy_x += enemy_dx
 
     if enemy_x > 736 or enemy_x < 0:
         enemy_dx = -enemy_dx
         enemy_y += enemy_dy
 
-    # Bullet movement
+    ##########################    Bullet movement    ##########################
     if fired: bullet_y += bullet_dy
 
     if bullet_y < 0:
         fired = False
         bullet_x, bullet_y = 0, 600
 
-    # Collisions checking
+    ##########################    Collisions    ##########################
     dist_x = bullet_x - enemy_x
     dist_y = bullet_y - enemy_y
     if -24 <= dist_x <= 64 and -24 <= dist_y <= 64 and fired:
@@ -87,7 +105,7 @@ while not done:
         enemy_x, enemy_y = random.randint(0, 736), random.randint(20, 50)
 
         
-    # Drawings
+    ##########################    Drawings    ##########################
     background()
     player(player_x, player_y)
     enemy(enemy_x, enemy_y)
