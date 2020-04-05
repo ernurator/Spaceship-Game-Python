@@ -1,43 +1,98 @@
 import pygame
 import random
+from enum import Enum
 #pylint: disable=no-member
 
 pygame.init()
 
 screen = pygame.display.set_mode((800, 600)) # w, h
 pygame.display.set_caption('Space blaster')
-
-
-##########################################    Objects init    ##########################################
-
-
-playerImage = pygame.image.load('res/spaceship.png')
-enemyImage = pygame.image.load('res/ufo.png')
 backgroundImage = pygame.image.load('res/background.jpg')
-bulletImage = pygame.image.load('res/bullet.png')
-
-player_x, player_y = 300, 520
-enemy_x, enemy_y = random.randint(0, 736), random.randint(20, 50)
-bullet_x, bullet_y = 0, 600
-enemy_dx = 10
-enemy_dy = 50
-bullet_dy = -30
 
 
-##########################################    Drawings    ##########################################
+class Direction(Enum):
+    LEFT = 3
+    RIGHT = 4
 
 
-def player(x, y):
-    screen.blit(playerImage, (x, y))
+##########################################    Player    ##########################################
 
-def enemy(x, y):
-    screen.blit(enemyImage, (x, y))
 
-def background():
-    screen.blit(backgroundImage, (0, 0))
+class Player:
+    def __init__(self):
+        self.image = pygame.image.load('res/spaceship.png')
+        self.x = 300
+        self.y = screen.get_size()[1] - self.image.get_size()[1] - 16
+        self.dx = 400
+    
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))
+    
+    def move(self, direction, sec):
+        if direction == Direction.RIGHT and self.x < screen.get_size()[0] - self.image.get_size()[0]:    
+            self.x += int(sec * self.dx)
+        if direction == Direction.LEFT and self.x > 0:
+            self.x -= int(sec * self.dx)
 
-def bullet(x, y):
-    screen.blit(bulletImage, (x, y))
+
+##########################################    Enemy    ##########################################
+
+
+class Enemy():
+    def __init__(self):
+        self.image = pygame.image.load('res/ufo.png')
+        self.x = random.randint(1, screen.get_size()[0] - self.image.get_size()[0] - 1)
+        self.y = random.randint(20, 50)
+        self.direction = random.choice((Direction.LEFT, Direction.RIGHT))
+        self.dx = 800 // 3
+        self.dy = 50
+
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))
+    
+    def move(self, sec):
+        self.x += int(self.dx*sec) if self.direction == Direction.RIGHT else -int(self.dx*sec)
+
+        if self.x > screen.get_size()[0] - self.image.get_size()[0] or self.x < 0:
+            self.direction = Direction.LEFT if self.direction == Direction.RIGHT else Direction.RIGHT
+            self.y += self.dy
+
+
+##########################################    Bullet    ##########################################
+
+
+class Bullet():
+    def __init__(self, x, y):
+        self.image = pygame.image.load('res/bullet.png')
+        self.x = x - self.image.get_size()[0] // 2
+        self.y = y - self.image.get_size()[1] - 4
+        self.dy = -600
+
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))
+
+    def move(self, sec):
+        self.y += int(self.dy * sec)
+        if self.y < 0:
+            global fired
+            fired = False
+            del self
+
+
+##########################################    Collisions    #########################################
+
+
+def checkCollisions(bullet1, enemies):
+    global score
+    global bullet
+    for i in range(len(enemies)):
+        dist_x = bullet1.x - enemies[i].x
+        dist_y = bullet1.y - enemies[i].y
+        if -24 <= dist_x <= 64 and -24 <= dist_y <= 64 and fired:
+            bullet.move(100) # to move bullet from screen
+            del enemies[i]
+            score += 1
+            break
 
 def drawScore():
     global score
@@ -46,22 +101,33 @@ def drawScore():
     screen.blit(text, (800 - text.get_width() - 20, 20))
 
 
-
 ##########################################    Init    ##########################################
 
+
+player = Player()
+enemies = [Enemy()]
 
 done = False
 fired = False
 score = 0
 
+FPS = 60
 clock = pygame.time.Clock()
-
+interval = 1.5
+cycletime = 0
 
 ##########################################    Main loop    ##########################################
 
 
 while not done:
-    clock.tick(30)
+    millis = clock.tick(FPS)
+    sec = millis / 1000
+    cycletime += sec
+
+    if cycletime > interval:
+        cycletime = 0
+        enemies.append(Enemy())
+
     for event in pygame.event.get():
         # Event on quit
         if event.type == pygame.QUIT:
@@ -71,44 +137,27 @@ while not done:
     pressed = pygame.key.get_pressed()
 
     if pressed[pygame.K_LEFT]:
-        player_x -= 14
+        player.move(Direction.LEFT, sec)
     if pressed[pygame.K_RIGHT]:
-        player_x += 14
+        player.move(Direction.RIGHT, sec)
 
     ###########################    Firing    ##########################
     if pressed[pygame.K_SPACE] and not fired:
         fired = True
-        bullet_x = player_x + 20
-        bullet_y = player_y - 25
+        global bullet
+        bullet = Bullet(player.x + player.image.get_size()[0] // 2, player.y)
     
-    ##########################    Enemy movement    ##########################
-    enemy_x += enemy_dx
+    ##########################    Drawings and other movements    ##########################
+    screen.blit(backgroundImage, (0, 0))
+    player.draw()
+    for enemy in enemies:
+        enemy.move(sec)
+        enemy.draw()
 
-    if enemy_x > 736 or enemy_x < 0:
-        enemy_dx = -enemy_dx
-        enemy_y += enemy_dy
+    if fired:
+        bullet.move(sec)
+        bullet.draw()
+        checkCollisions(bullet, enemies)
 
-    ##########################    Bullet movement    ##########################
-    if fired: bullet_y += bullet_dy
-
-    if bullet_y < 0:
-        fired = False
-        bullet_x, bullet_y = 0, 600
-
-    ##########################    Collisions    ##########################
-    dist_x = bullet_x - enemy_x
-    dist_y = bullet_y - enemy_y
-    if -24 <= dist_x <= 64 and -24 <= dist_y <= 64 and fired:
-        fired = False
-        score += 1
-        bullet_x, bullet_y = 0, 600
-        enemy_x, enemy_y = random.randint(0, 736), random.randint(20, 50)
-
-        
-    ##########################    Drawings    ##########################
-    background()
-    player(player_x, player_y)
-    enemy(enemy_x, enemy_y)
-    if fired: bullet(bullet_x, bullet_y)
     drawScore()
     pygame.display.flip()
