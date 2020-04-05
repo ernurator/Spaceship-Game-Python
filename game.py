@@ -82,14 +82,15 @@ class Bullet():
 ##########################################    Collisions    #########################################
 
 
-def checkCollisions(bullet1, enemies):
+def checkCollisions(bullet, enemies):
     global score
-    global bullet
+    global fired
     for i in range(len(enemies)):
-        dist_x = bullet1.x - enemies[i].x
-        dist_y = bullet1.y - enemies[i].y
+        dist_x = bullet.x - enemies[i].x
+        dist_y = bullet.y - enemies[i].y
         if -24 <= dist_x <= 64 and -24 <= dist_y <= 64 and fired:
-            bullet.move(100) # to move bullet from screen
+            fired = False
+            del bullet
             del enemies[i]
             score += 1
             break
