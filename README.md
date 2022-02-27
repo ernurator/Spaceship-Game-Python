@@ -1,2 +1,4 @@
-# SpaceshipGamePython
-Spaceship Game on Python (using pygame)
+# Spaceship Game
+
+Spaceship Game on Python (created using Pygame)
+
